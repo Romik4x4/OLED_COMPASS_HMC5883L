@@ -2,6 +2,9 @@
 #include <Wire.h>
 #include <HMC5883L.h>
 
+// Version 1.0
+// Arduino 1.0.6
+
 // https://github.com/jarzebski/Arduino-HMC5883L
 // https://code.google.com/p/u8glib/
 
