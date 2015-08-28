@@ -19,8 +19,9 @@ char nap[3];
 void setup(void) {
   
   compass.begin();
-  pinMode(A0, OUTPUT);           
-  digitalWrite(A0, HIGH);  
+  
+  pinMode(A2, OUTPUT);           
+  digitalWrite(A2, HIGH);  
   
    compass.setRange(HMC5883L_RANGE_1_3GA);
    compass.setMeasurementMode(HMC5883L_CONTINOUS);
