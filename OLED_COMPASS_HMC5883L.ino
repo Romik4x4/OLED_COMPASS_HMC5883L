@@ -1,6 +1,7 @@
 #include "U8glib.h"
 #include <Wire.h>
 #include <HMC5883L.h>
+#include "RTClib.h"
 
 // Version 1.0
 // Arduino 1.0.6
@@ -14,12 +15,14 @@ U8GLIB_SSD1306_128X64 u8g(10, 9, 12, 11,13);
 
 int x,y,p,z;
 
+RTC_Millis rtc;
+
 void setup(void) {
   
   compass.begin();
   
   pinMode(A2, OUTPUT);           
-  digitalWrite(A2, HIGH);  
+  digitalWrite(A2, LOW);  
   
    compass.setRange(HMC5883L_RANGE_1_3GA);
    compass.setMeasurementMode(HMC5883L_CONTINOUS);
@@ -27,11 +30,17 @@ void setup(void) {
    compass.setSamples(HMC5883L_SAMPLES_8);
    // Set calibration offset. See HMC5883L_calibration.ino
    compass.setOffset(0, 0);
+ 
+  // rtc.begin(DateTime(F(__DATE__), F(__TIME__))); 
+  
+   rtc.adjust(DateTime(2015, 1, 1, 0, 0, 0));
   
 }
 
 void loop(void) {
 
+   DateTime now = rtc.now();
+     
    z = round(get_compass());
     
   u8g.firstPage();  
@@ -42,11 +51,28 @@ void loop(void) {
     
     get_dir_print(1,10); // Печать направления
     
-    u8g.setPrintPos(1,25);
-    u8g.print(round(get_compass())); // Печать азимута
+    u8g.setFont(u8g_font_unifont);
+    u8g.setPrintPos(1,30);
+    u8g.print(round(get_compass())); // Печать азимута    
+    u8g.setFont(u8g_font_unifont);
+    u8g.print(char(176)); // Печатаем значок градуса
+
+      u8g.setPrintPos(1,60);
+      if (now.hour() < 10) u8g.print(0);
+      u8g.print(now.hour(), DEC);
+      u8g.print(':');
+      if (now.minute() < 10) u8g.print(0);
+      u8g.print(now.minute(), DEC);
+      u8g.print(':');
+      if (now.second() < 10) u8g.print(0);
+      u8g.print(now.second(), DEC);
     
     z = round(get_compass());
+
+    if (z >= 0 && z <= 5)  digitalWrite(A2, HIGH); digitalWrite(A2, LOW);
+    if (z >= 355 && z <= 360)  digitalWrite(A2, HIGH); else digitalWrite(A2, LOW);
     
+ 
     p = z+180; if (p < 0) p=p*-1;
     x = 96 - (29 * cos(z*(3.14/180)));
     y = 32 -(29 * sin(z*(3.14/180)));
@@ -94,7 +120,7 @@ float get_compass( void ) {
 // Принт на русском буквы направления
 // Расстояние между буквами примерно 10
 
-void print_dir(char a, byte x, byte y) {
+void print_dir(char a, int x, int y) {
 
      u8g.setFont(u8g_font_unifont_0_8);
      u8g.setPrintPos(x,y);
@@ -102,17 +128,18 @@ void print_dir(char a, byte x, byte y) {
       if (a=='N') u8g.print(char(193));    // C
       if (a=='S') u8g.print(char(206));    // Ю 
       if (a=='E') u8g.print(char(178));    // В   
-      if (a=='E') u8g.print(char(183));    // З
+      if (a=='W') u8g.print(char(183));   // З
     
 }
 
-void get_dir_print( byte x, byte y) {
+void get_dir_print( int x, int y) {
   
    z = round(get_compass());
   
-  if (z > 0 & z < 90)       { print_dir('N',x,y);  print_dir('E',x,y+10);  }
-  if (z > 90 & z < 180)   { print_dir('E',x,y);  print_dir('S',x,y+10);  }
-  if (z > 180 & z < 270) { print_dir('S',x,y);  print_dir('W',x,y+10); }
-  if (z > 270 & z < 360) { print_dir('W',x,y); print_dir('N',x,y+10);  }
+  if (z > 0 & z < 90)       { print_dir('N',x,y);  print_dir('E',x+10,y);  }
+  if (z > 90 & z < 180)   { print_dir('E',x,y);  print_dir('S',x+10,y);  }
+  if (z > 180 & z < 270) { print_dir('S',x,y);  print_dir('W',x+10,y); }
+  if (z > 270 & z < 360) { print_dir('W',x,y); print_dir('N',x+10,y);  }
       
+  
 }
