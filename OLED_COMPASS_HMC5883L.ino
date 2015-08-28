@@ -12,9 +12,7 @@ HMC5883L compass;
 
 U8GLIB_SSD1306_128X64 u8g(10, 9, 12, 11,13);
 
-int z = 0;
-int x,y,p;
-char nap[3];
+int x,y,p,z;
 
 void setup(void) {
   
@@ -41,21 +39,18 @@ void loop(void) {
   do {
     
     u8g.drawCircle(96, 32, 30);
-    u8g.setFont(u8g_font_unifont);
-    u8g.drawStr(1,10,nap);
-
+    
+    get_dir_print(1,10); // Печать направления
+    
     u8g.setPrintPos(1,25);
-    u8g.print(round(get_compass()));
-
-
-  //  u8g.setPrintPos(1,40);
-  //  u8g.print(z);
+    u8g.print(round(get_compass())); // Печать азимута
     
     z = round(get_compass());
     
     p = z+180; if (p < 0) p=p*-1;
     x = 96 - (29 * cos(z*(3.14/180)));
     y = 32 -(29 * sin(z*(3.14/180)));
+  
     u8g.drawLine(96,32,x,y);
     u8g.drawCircle(x,y, 3);
     
@@ -64,15 +59,7 @@ void loop(void) {
     u8g.drawLine(96,32,x,y);
        
  } while( u8g.nextPage() );
- 
-  z = round(get_compass());
-  
-  if (z > 0 & z < 90)       strcpy(nap,"NE");
-  if (z > 90 & z < 180)   strcpy(nap,"ES");
-  if (z > 180 & z < 270) strcpy(nap,"SW");
-  if (z > 270 & z < 360) strcpy(nap,"WN");
-  
-    
+       
   delay(100);
 
 }
@@ -102,4 +89,30 @@ float get_compass( void ) {
   float headingDegrees = heading * 180/M_PI; 
 
   return(headingDegrees);
+}
+
+// Принт на русском буквы направления
+// Расстояние между буквами примерно 10
+
+void print_dir(char a, byte x, byte y) {
+
+     u8g.setFont(u8g_font_unifont_0_8);
+     u8g.setPrintPos(x,y);
+  
+      if (a=='N') u8g.print(char(193));    // C
+      if (a=='S') u8g.print(char(206));    // Ю 
+      if (a=='E') u8g.print(char(178));    // В   
+      if (a=='E') u8g.print(char(183));    // З
+    
+}
+
+void get_dir_print( byte x, byte y) {
+  
+   z = round(get_compass());
+  
+  if (z > 0 & z < 90)       { print_dir('N',x,y);  print_dir('E',x,y+10);  }
+  if (z > 90 & z < 180)   { print_dir('E',x,y);  print_dir('S',x,y+10);  }
+  if (z > 180 & z < 270) { print_dir('S',x,y);  print_dir('W',x,y+10); }
+  if (z > 270 & z < 360) { print_dir('W',x,y); print_dir('N',x,y+10);  }
+      
 }
