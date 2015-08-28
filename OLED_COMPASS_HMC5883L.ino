@@ -68,6 +68,9 @@ void loop(void) {
     u8g.print(now.second(), DEC);
 
     z = round(get_compass());
+    
+    if (z >= 181 && z < 180) z = z + 180;
+    if (z > 180 ) z = z-180;
 
     if (z >= 0 && z <= 5)  { 
       digitalWrite(A2, HIGH); 
@@ -86,9 +89,9 @@ void loop(void) {
     u8g.drawLine(96,32,x,y);
     u8g.drawCircle(x,y, 3);
 
-    x = 96 - (29 * cos(p*(3.14/180)));
-    y = 32 -(29 * sin(p*(3.14/180)));
-    u8g.drawLine(96,32,x,y);
+   // x = 96 - (29 * cos(p*(3.14/180)));
+  //  y = 32 -(29 * sin(p*(3.14/180)));
+   // u8g.drawLine(96,32,x,y);
 
   } 
   while( u8g.nextPage() );
