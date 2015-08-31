@@ -13,7 +13,7 @@ HMC5883L compass;
 
 U8GLIB_SSD1306_128X64 u8g(10, 9, 12, 11,13);
 
-int x,y,p,z;
+int x,y,p,z,north;
 
 RTC_Millis rtc;
 
@@ -41,7 +41,7 @@ void loop(void) {
 
   DateTime now = rtc.now();
 
-  z = round(get_compass());
+  north  = round(get_compass());
 
   u8g.firstPage();  
 
@@ -67,27 +67,23 @@ void loop(void) {
     if (now.second() < 10) u8g.print(0);
     u8g.print(now.second(), DEC);
 
-    z = round(get_compass());
-
-    if (z >= 0 && z <= 5)  { 
+    north = round(get_compass());
+    
+    if (north >= 0 && north <= 5)  { 
       digitalWrite(A2, HIGH); 
-    } else if (z >= 355 && z <= 360) {
+    } else if (north >= 355 && north <= 360) {
       digitalWrite(A2, HIGH); 
     } else {      
       digitalWrite(A2, LOW);
     }
 
-    p = z-180; 
-    if (p > 360) p = z - 180;
+    draw_line();
     
-    x = 96 - (29 * cos(z*(3.14/180)));
-    y = 32 -(29 * sin(z*(3.14/180)));
-
-    u8g.drawLine(96,32,x,y);
+    p = north - 180; 
+    if (p > 360) p = north - 180;
     
     x = 96 - (29 * cos(p*(3.14/180)));
     y = 32 -(29 * sin(p*(3.14/180)));
-    u8g.drawLine(96,32,x,y);
     
     u8g.drawCircle(x,y, 3);
 
@@ -95,6 +91,25 @@ void loop(void) {
   while( u8g.nextPage() );
 
   delay(100);
+
+}
+
+void draw_line( void ) {
+  
+    int r = 0;
+    
+    p = -180; 
+    
+    x = 96 - (29 * cos(r*(3.14/180)));
+    y = 32 - (29 * sin(r*(3.14/180)));
+
+    u8g.drawLine(96,32,x,y);
+    
+    x = 96 - (29 * cos(p*(3.14/180)));
+    y = 32 -(29 * sin(p*(3.14/180)));
+
+    u8g.drawLine(96,32,x,y);
+    u8g.drawDisc(x,y, 3);
 
 }
 
